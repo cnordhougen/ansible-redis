@@ -14,9 +14,13 @@
     - make
   when: ansible_os_family == "RedHat"
 
+- name: Detect if we're running in a Docker container
+  stat: path=/.dockerinit
+  register: dockerinit
+
 - name: enable overcommit in sysctl
   sysctl: name=vm.overcommit_memory value=1 state=present reload=yes ignoreerrors=yes
-  when: redis_travis_ci is not defined
+  when: not dockerinit.stat.exists and redis_travis_ci is not defined
 
 - name: add redis user
   user:
